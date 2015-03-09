@@ -12,6 +12,7 @@ namespace FoodManagement.Models
         public string Name { get; set; }
         [ForeignKey("IngredientType")]
         public int IngredientTypeID { get; set; }
+        public string Description { get; set; }
 
         public virtual IngredientType IngredientType { get; set; }
         public virtual ICollection<CurrentPrice> CurrentPrices { get; set; }
