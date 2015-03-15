@@ -9,8 +9,10 @@ namespace FoodManagement.Models
         public int ID { get; set; }
         [StringLength(50)]
         [RegularExpression(@"^[A-Z]+[a-zA-Z''-'\s]*$")]
+        [Display(Name = "Ingredient Name")]
         public string Name { get; set; }
         [ForeignKey("IngredientType")]
+        [Display(Name = "Ingredient Type")]
         public int IngredientTypeID { get; set; }
         public string Description { get; set; }
 

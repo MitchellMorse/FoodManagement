@@ -1,0 +1,69 @@
+﻿@model IEnumerable<FoodManagement.Models.Recipe>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Name)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.CookTimeType.Name)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.CookType.Name)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.PrepTimeType.Name)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.CountUsed)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.PrepTime)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.CookTime)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.Name)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.CookTimeType.Name)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.CookType.Name)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.PrepTimeType.Name)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.CountUsed)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.PrepTime)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.CookTime)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { id=item.ID }) |
+            @Html.ActionLink("Details", "Details", new { id=item.ID }) |
+            @Html.ActionLink("Delete", "Delete", new { id=item.ID })
+        </td>
+    </tr>
+}
+
+</table>

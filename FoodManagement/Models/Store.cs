@@ -6,6 +6,7 @@ namespace FoodManagement.Models
     {
         public int ID { get; set; }
         [StringLength(50)]
+        [Display(Name = "Store Name")]
         public string Name { get; set; }
     }
 }

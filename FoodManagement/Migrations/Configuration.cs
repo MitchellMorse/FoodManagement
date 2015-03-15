@@ -20,7 +20,8 @@ namespace FoodManagement.Migrations
                 new CookType() { Name = "Grill" },
                 new CookType() { Name = "Bake" },
                 new CookType() { Name = "Boil" },
-                new CookType() { Name = "Crockpot" }
+                new CookType() { Name = "Crockpot" },
+                new CookType() { Name = "Stove Top" }
                 );
 
             context.TimeTypes.AddOrUpdate(t => t.Name,
