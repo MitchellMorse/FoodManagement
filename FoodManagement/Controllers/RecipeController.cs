@@ -9,6 +9,7 @@ using System.Web;
 using System.Web.Mvc;
 using FoodManagement.DAL;
 using FoodManagement.Models;
+using FoodManagement.ViewModels;
 
 namespace FoodManagement.Controllers
 {
@@ -67,7 +68,59 @@ namespace FoodManagement.Controllers
             return View(recipe);
         }
 
+        //Working on getting the edit view to have a grid showing ingredients linked to this recipe
+        //Want another grid that is sortable and filterable that shows all ingredients not linked to this recipe, should be selectable
+        //Need to show cook type, cook time, and prep time
+        //way to save
         // GET: Recipe/Edit/5
+        public async Task<ActionResult> RecipeIngredients(int? id)
+        {
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+
+            var viewModel = new RecipeIngredients();
+            Recipe recipe = await db.Recipes.FindAsync(id);
+
+            //TODO: this attempt to implement eager loading did not work.  Need to run sql profiler to see how many times this action causes us to hit the DB and see if eager loading can shrink that
+            //    db.Recipes.Include(r => r.ID == id).Include(r => r.RecipeIngredients.Select(i => i.Ingredient)).Single();
+            //viewModel.CurrentRecipe = db.Recipes.Include(r => r.ID == id).Include(r => r.RecipeIngredients).SingleOrDefault();
+
+            //Recipe recipe = await db.Recipes.FindAsync(id);
+            if (recipe == null)
+            {
+                return HttpNotFound();
+            }
+
+            IEnumerable<int> idsOfIngredientsLinkedToThisRecipe = (from i in db.RecipeIngredients
+                                                                   where i.RecipeID == id
+                                                                   select i.IngredientID);
+
+            viewModel.CurrentRecipe = recipe;
+            viewModel.IngredientsForRecipe = db.Ingredients.Where(i => idsOfIngredientsLinkedToThisRecipe.Contains(i.ID));
+            viewModel.UnusedIngredients = db.Ingredients.Where(i => !idsOfIngredientsLinkedToThisRecipe.Contains(i.ID));
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> RecipeIngredients([Bind(Include = "ID,Name")] RecipeIngredients recipeIngredients)
+        {
+            //if (ModelState.IsValid)
+            //{
+            //    db.Entry(recipe).State = EntityState.Modified;
+            //    await db.SaveChangesAsync();
+            //    return RedirectToAction("Index");
+            //}
+            //ViewBag.CookTimeTypeId = new SelectList(db.TimeTypes, "ID", "Name", recipe.CookTimeTypeId);
+            //ViewBag.CookTypeId = new SelectList(db.CookTypes, "ID", "Name", recipe.CookTypeId);
+            //ViewBag.PrepTimeTypeId = new SelectList(db.TimeTypes, "ID", "Name", recipe.PrepTimeTypeId);
+            //return View(recipe);
+            return View(recipeIngredients);
+        }
+
         public async Task<ActionResult> Edit(int? id)
         {
             if (id == null)

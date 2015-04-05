@@ -1,0 +1,32 @@
+﻿@model FoodManagement.ViewModels.RecipeIngredients
+
+@{
+    ViewBag.Title = "Recipe Ingredients";
+}
+
+<h2>Recipe Ingredients</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    
+    <div class="form-horizontal">
+        <h4>@Html.DisplayFor(model => model.CurrentRecipe.Name)</h4>
+        
+        <h6>Unused Ingredients</h6>
+        <table class="col-sm-6">
+            <tr>
+                <th>Name</th>
+            </tr>
+            
+            @foreach (var ingredients in Model.UnusedIngredients)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(ingredient => ingredients.Name)
+                    </td>
+                </tr>
+            }
+        </table>
+    </div>
+}
