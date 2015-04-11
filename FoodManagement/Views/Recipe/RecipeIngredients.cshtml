@@ -6,25 +6,28 @@
 
 <h2>Recipe Ingredients</h2>
 
-@using (Html.BeginForm())
+@using (Html.BeginForm("RecipeIngredients", "Recipe", FormMethod.Get))
 {
-    @Html.AntiForgeryToken()
-    
     <div class="form-horizontal">
         <h4>@Html.DisplayFor(model => model.CurrentRecipe.Name)</h4>
-        
         <h5>Unused Ingredients</h5>
+        @using (Html.BeginForm("RecipeIngredients", "Recipe", FormMethod.Get))
+        {
+            <p>
+                Name: @Html.TextBox("currentUnusedFilter", ViewBag.CurrentUnusedFilter as string)
+                <input type="submit" value="Search" />
+            </p>
+        }
         <table class="table-condensed">
             <tr>
                 <th>
-                    @Html.ActionLink("Name", "RecipeIngredients", new { unusedIngredientSort = ViewBag.UnusedNameSort, currentFilter = ViewBag.CurrentFilter })
+                    @Html.ActionLink("Name", "RecipeIngredients", new { unusedIngredientSort = ViewBag.UnusedNameSort, currentUnusedFilter = ViewBag.CurrentUnusedFilter })
                 </th>
                 <th>
-                    @*Type*@
-                    @Html.ActionLink("Type", "RecipeIngredients", new { unusedIngredientSort = ViewBag.UnusedTypeSort, currentFilter = ViewBag.CurrentFilter })
+                    @Html.ActionLink("Type", "RecipeIngredients", new { unusedIngredientSort = ViewBag.UnusedTypeSort, currentUnusedFilter = ViewBag.CurrentUnusedFilter })
                 </th>
             </tr>
-            
+
             @foreach (var ingredients in Model.UnusedIngredients)
             {
                 <tr>

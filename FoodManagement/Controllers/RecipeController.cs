@@ -73,13 +73,12 @@ namespace FoodManagement.Controllers
         }
 
         // GET: Recipe/Edit/5
-        public async Task<ActionResult> RecipeIngredients(int? id, string unusedIngredientSort, string currentFilter)
+        public async Task<ActionResult> RecipeIngredients(int? id, string unusedIngredientSort, string currentUnusedFilter)
         {
             //ViewBag.CurrentSort = sortOrder;
-            //ViewBag.UnusedSort = String.IsNullOrEmpty(unusedIngredientSort) || unusedIngredientSort == _strAscNameSort ? _strDescNameSort : _strAscNameSort;
             ViewBag.UnusedNameSort = string.IsNullOrWhiteSpace(unusedIngredientSort) ? _strDescNameSort : "";
             ViewBag.UnusedTypeSort = unusedIngredientSort == _strAscTypeSort ? _strDescTypeSort : _strAscTypeSort;
-            ViewBag.CurrentFilter = string.Empty;  //TODO: implement filtering
+            ViewBag.CurrentUnusedFilter = currentUnusedFilter;
 
             if (id == null)
             {
@@ -100,32 +99,31 @@ namespace FoodManagement.Controllers
 
             viewModel.CurrentRecipe = recipe;
             viewModel.IngredientsForRecipe = db.Ingredients.Where(i => idsOfIngredientsLinkedToThisRecipe.Contains(i.ID));
+            viewModel.UnusedIngredients = db.Ingredients.Where(i => !idsOfIngredientsLinkedToThisRecipe.Contains(i.ID));
 
-            if (string.IsNullOrWhiteSpace(unusedIngredientSort))
+            if (!string.IsNullOrWhiteSpace(currentUnusedFilter))
             {
-                unusedIngredientSort = _strAscNameSort;
+                viewModel.UnusedIngredients =
+                    viewModel.UnusedIngredients.Where(i => i.Name.ToUpper().Contains(currentUnusedFilter.ToUpper()));
             }
+
             switch (unusedIngredientSort)
             {
                 case _strAscTypeSort:
                     viewModel.UnusedIngredients =
-                        db.Ingredients.Where(i => !idsOfIngredientsLinkedToThisRecipe.Contains(i.ID))
-                            .OrderBy(i => i.IngredientType.Name).ThenBy(i => i.Name);
+                        viewModel.UnusedIngredients.OrderBy(i => i.IngredientType.Name).ThenBy(i => i.Name);
                     break;
                 case _strDescTypeSort:
                     viewModel.UnusedIngredients =
-                        db.Ingredients.Where(i => !idsOfIngredientsLinkedToThisRecipe.Contains(i.ID))
-                            .OrderByDescending(i => i.IngredientType.Name).ThenBy(i => i.Name);
+                        viewModel.UnusedIngredients.OrderByDescending(i => i.IngredientType.Name).ThenBy(i => i.Name);
                     break;
-                case _strAscNameSort:
+                case _strDescNameSort:
                     viewModel.UnusedIngredients =
-                        db.Ingredients.Where(i => !idsOfIngredientsLinkedToThisRecipe.Contains(i.ID))
-                            .OrderBy(i => i.Name).ThenBy(i => i.IngredientType.Name);
+                        viewModel.UnusedIngredients.OrderByDescending(i => i.Name).ThenBy(i => i.IngredientType.Name);
                     break;
                 default:
                     viewModel.UnusedIngredients =
-                        db.Ingredients.Where(i => !idsOfIngredientsLinkedToThisRecipe.Contains(i.ID))
-                            .OrderByDescending(i => i.Name).ThenBy(i => i.IngredientType.Name);
+                        viewModel.UnusedIngredients.OrderBy(i => i.Name).ThenBy(i => i.IngredientType.Name);
                     break;
             }
 
