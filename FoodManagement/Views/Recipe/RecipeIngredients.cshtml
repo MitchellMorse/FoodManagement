@@ -13,10 +13,16 @@
     <div class="form-horizontal">
         <h4>@Html.DisplayFor(model => model.CurrentRecipe.Name)</h4>
         
-        <h6>Unused Ingredients</h6>
-        <table class="col-sm-6">
+        <h5>Unused Ingredients</h5>
+        <table class="table-condensed">
             <tr>
-                <th>Name</th>
+                <th>
+                    @Html.ActionLink("Name", "RecipeIngredients", new { unusedIngredientSort = ViewBag.UnusedNameSort, currentFilter = ViewBag.CurrentFilter })
+                </th>
+                <th>
+                    @*Type*@
+                    @Html.ActionLink("Type", "RecipeIngredients", new { unusedIngredientSort = ViewBag.UnusedTypeSort, currentFilter = ViewBag.CurrentFilter })
+                </th>
             </tr>
             
             @foreach (var ingredients in Model.UnusedIngredients)
@@ -24,6 +30,9 @@
                 <tr>
                     <td>
                         @Html.DisplayFor(ingredient => ingredients.Name)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(ingredient => ingredients.IngredientType.Name)
                     </td>
                 </tr>
             }

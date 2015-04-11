@@ -16,6 +16,10 @@ namespace FoodManagement.Controllers
     public class RecipeController : Controller
     {
         private FoodManagementContext db = new FoodManagementContext();
+        private const string _strAscNameSort = "name";
+        private const string _strDescNameSort = "name_desc";
+        private const string _strAscTypeSort = "type";
+        private const string _strDescTypeSort = "type_desc";
 
         // GET: Recipe
         public async Task<ActionResult> Index()
@@ -68,13 +72,15 @@ namespace FoodManagement.Controllers
             return View(recipe);
         }
 
-        //Working on getting the edit view to have a grid showing ingredients linked to this recipe
-        //Want another grid that is sortable and filterable that shows all ingredients not linked to this recipe, should be selectable
-        //Need to show cook type, cook time, and prep time
-        //way to save
         // GET: Recipe/Edit/5
-        public async Task<ActionResult> RecipeIngredients(int? id)
+        public async Task<ActionResult> RecipeIngredients(int? id, string unusedIngredientSort, string currentFilter)
         {
+            //ViewBag.CurrentSort = sortOrder;
+            //ViewBag.UnusedSort = String.IsNullOrEmpty(unusedIngredientSort) || unusedIngredientSort == _strAscNameSort ? _strDescNameSort : _strAscNameSort;
+            ViewBag.UnusedNameSort = string.IsNullOrWhiteSpace(unusedIngredientSort) ? _strDescNameSort : "";
+            ViewBag.UnusedTypeSort = unusedIngredientSort == _strAscTypeSort ? _strDescTypeSort : _strAscTypeSort;
+            ViewBag.CurrentFilter = string.Empty;  //TODO: implement filtering
+
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
@@ -83,11 +89,6 @@ namespace FoodManagement.Controllers
             var viewModel = new RecipeIngredients();
             Recipe recipe = await db.Recipes.FindAsync(id);
 
-            //TODO: this attempt to implement eager loading did not work.  Need to run sql profiler to see how many times this action causes us to hit the DB and see if eager loading can shrink that
-            //    db.Recipes.Include(r => r.ID == id).Include(r => r.RecipeIngredients.Select(i => i.Ingredient)).Single();
-            //viewModel.CurrentRecipe = db.Recipes.Include(r => r.ID == id).Include(r => r.RecipeIngredients).SingleOrDefault();
-
-            //Recipe recipe = await db.Recipes.FindAsync(id);
             if (recipe == null)
             {
                 return HttpNotFound();
@@ -99,7 +100,34 @@ namespace FoodManagement.Controllers
 
             viewModel.CurrentRecipe = recipe;
             viewModel.IngredientsForRecipe = db.Ingredients.Where(i => idsOfIngredientsLinkedToThisRecipe.Contains(i.ID));
-            viewModel.UnusedIngredients = db.Ingredients.Where(i => !idsOfIngredientsLinkedToThisRecipe.Contains(i.ID));
+
+            if (string.IsNullOrWhiteSpace(unusedIngredientSort))
+            {
+                unusedIngredientSort = _strAscNameSort;
+            }
+            switch (unusedIngredientSort)
+            {
+                case _strAscTypeSort:
+                    viewModel.UnusedIngredients =
+                        db.Ingredients.Where(i => !idsOfIngredientsLinkedToThisRecipe.Contains(i.ID))
+                            .OrderBy(i => i.IngredientType.Name).ThenBy(i => i.Name);
+                    break;
+                case _strDescTypeSort:
+                    viewModel.UnusedIngredients =
+                        db.Ingredients.Where(i => !idsOfIngredientsLinkedToThisRecipe.Contains(i.ID))
+                            .OrderByDescending(i => i.IngredientType.Name).ThenBy(i => i.Name);
+                    break;
+                case _strAscNameSort:
+                    viewModel.UnusedIngredients =
+                        db.Ingredients.Where(i => !idsOfIngredientsLinkedToThisRecipe.Contains(i.ID))
+                            .OrderBy(i => i.Name).ThenBy(i => i.IngredientType.Name);
+                    break;
+                default:
+                    viewModel.UnusedIngredients =
+                        db.Ingredients.Where(i => !idsOfIngredientsLinkedToThisRecipe.Contains(i.ID))
+                            .OrderByDescending(i => i.Name).ThenBy(i => i.IngredientType.Name);
+                    break;
+            }
 
             return View(viewModel);
         }
