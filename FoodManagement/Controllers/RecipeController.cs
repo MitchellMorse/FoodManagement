@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Net;
 using System.Web;
 using System.Web.Mvc;
+using System.Web.Routing;
 using FoodManagement.DAL;
 using FoodManagement.Models;
 using FoodManagement.ViewModels;
@@ -207,6 +208,33 @@ namespace FoodManagement.Controllers
             db.Recipes.Remove(recipe);
             await db.SaveChangesAsync();
             return RedirectToAction("Index");
+        }
+
+        [HttpPost, ActionName("AddIngredientToRecipe")]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> AddIngredientToRecipe(int recipeId, int ingredientId)
+        {
+            //check to see if this relationship already exists.  If so, we are done
+            int existingId = (from ri in db.RecipeIngredients
+                              where ri.RecipeID == recipeId && ri.IngredientID == ingredientId
+                              select ri.ID).FirstOrDefault();
+
+            if (existingId > 0)
+            {
+                return RedirectToAction("RecipeIngredients", new { id = recipeId });
+            }
+
+            RecipeIngredient recipeIngredient = new RecipeIngredient()
+            {
+                IngredientID = ingredientId,
+                RecipeID = recipeId,
+                Quantity = 1,
+                QuantityTypeID = 1 //TODO: modify the UI so that this can be set when adding the ingredient
+            };
+
+            db.RecipeIngredients.Add(recipeIngredient);
+            await db.SaveChangesAsync();
+            return RedirectToAction("RecipeIngredients", new { id = recipeId });
         }
 
         protected override void Dispose(bool disposing)

@@ -27,7 +27,7 @@
                     @Html.ActionLink("Type", "RecipeIngredients", new { unusedIngredientSort = ViewBag.UnusedTypeSort, currentUnusedFilter = ViewBag.CurrentUnusedFilter })
                 </th>
             </tr>
-
+            
             @foreach (var ingredients in Model.UnusedIngredients)
             {
                 <tr>
@@ -36,6 +36,15 @@
                     </td>
                     <td>
                         @Html.DisplayFor(ingredient => ingredients.IngredientType.Name)
+                    </td>
+                    <td>
+                        @{
+                            using (Html.BeginForm("AddIngredientToRecipe", "Recipe", new {recipeId = 1, ingredientId = ingredients.ID}))
+                            {
+                                @Html.AntiForgeryToken()
+                                <input type="submit" name="AddIngredient" value="Add Ingredient"/>
+                            }
+                        }
                     </td>
                 </tr>
             }
