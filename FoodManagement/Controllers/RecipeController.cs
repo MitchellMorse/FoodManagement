@@ -1,26 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.Entity;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Net;
-using System.Web;
-using System.Web.Mvc;
-using System.Web.Routing;
-using FoodManagement.DAL;
+﻿using FoodManagement.DAL;
+using FoodManagement.ExtensionMethods;
 using FoodManagement.Models;
 using FoodManagement.ViewModels;
+using System.Collections.Generic;
+using System.Data.Entity;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
+using System.Web.Mvc;
 
 namespace FoodManagement.Controllers
 {
     public class RecipeController : Controller
     {
         private FoodManagementContext db = new FoodManagementContext();
-        private const string _strAscNameSort = "name";
-        private const string _strDescNameSort = "name_desc";
-        private const string _strAscTypeSort = "type";
-        private const string _strDescTypeSort = "type_desc";
 
         // GET: Recipe
         public async Task<ActionResult> Index()
@@ -74,12 +67,15 @@ namespace FoodManagement.Controllers
         }
 
         // GET: Recipe/Edit/5
-        public async Task<ActionResult> RecipeIngredients(int? id, string unusedIngredientSort, string currentUnusedFilter)
+        public async Task<ActionResult> RecipeIngredients(int? id, string unusedIngredientSort, string currentUnusedFilter, string ingredientsForRecipeSort, string currentIngredientsForRecipeFilter)
         {
-            //ViewBag.CurrentSort = sortOrder;
-            ViewBag.UnusedNameSort = string.IsNullOrWhiteSpace(unusedIngredientSort) ? _strDescNameSort : "";
-            ViewBag.UnusedTypeSort = unusedIngredientSort == _strAscTypeSort ? _strDescTypeSort : _strAscTypeSort;
+            ViewBag.UnusedNameSort = string.IsNullOrWhiteSpace(unusedIngredientSort) ? Ingredient._strDescNameSort : "";
+            ViewBag.UnusedTypeSort = unusedIngredientSort == Ingredient._strAscTypeSort ? Ingredient._strDescTypeSort : Ingredient._strAscTypeSort;
             ViewBag.CurrentUnusedFilter = currentUnusedFilter;
+
+            ViewBag.UsedNameSort = string.IsNullOrWhiteSpace(ingredientsForRecipeSort) ? Ingredient._strDescNameSort : "";
+            ViewBag.UsedTypeSort = ingredientsForRecipeSort == Ingredient._strAscTypeSort ? Ingredient._strDescTypeSort : Ingredient._strAscTypeSort;
+            ViewBag.CurrentUsedFilter = currentIngredientsForRecipeFilter;
 
             if (id == null)
             {
@@ -99,34 +95,8 @@ namespace FoodManagement.Controllers
                                                                    select i.IngredientID);
 
             viewModel.CurrentRecipe = recipe;
-            viewModel.IngredientsForRecipe = db.Ingredients.Where(i => idsOfIngredientsLinkedToThisRecipe.Contains(i.ID));
-            viewModel.UnusedIngredients = db.Ingredients.Where(i => !idsOfIngredientsLinkedToThisRecipe.Contains(i.ID));
-
-            if (!string.IsNullOrWhiteSpace(currentUnusedFilter))
-            {
-                viewModel.UnusedIngredients =
-                    viewModel.UnusedIngredients.Where(i => i.Name.ToUpper().Contains(currentUnusedFilter.ToUpper()));
-            }
-
-            switch (unusedIngredientSort)
-            {
-                case _strAscTypeSort:
-                    viewModel.UnusedIngredients =
-                        viewModel.UnusedIngredients.OrderBy(i => i.IngredientType.Name).ThenBy(i => i.Name);
-                    break;
-                case _strDescTypeSort:
-                    viewModel.UnusedIngredients =
-                        viewModel.UnusedIngredients.OrderByDescending(i => i.IngredientType.Name).ThenBy(i => i.Name);
-                    break;
-                case _strDescNameSort:
-                    viewModel.UnusedIngredients =
-                        viewModel.UnusedIngredients.OrderByDescending(i => i.Name).ThenBy(i => i.IngredientType.Name);
-                    break;
-                default:
-                    viewModel.UnusedIngredients =
-                        viewModel.UnusedIngredients.OrderBy(i => i.Name).ThenBy(i => i.IngredientType.Name);
-                    break;
-            }
+            viewModel.IngredientsForRecipe = db.Ingredients.Where(i => idsOfIngredientsLinkedToThisRecipe.Contains(i.ID)).ApplyFilter(currentIngredientsForRecipeFilter).SortList(ingredientsForRecipeSort);
+            viewModel.UnusedIngredients = db.Ingredients.Where(i => !idsOfIngredientsLinkedToThisRecipe.Contains(i.ID)).ApplyFilter(currentUnusedFilter).SortList(unusedIngredientSort);
 
             return View(viewModel);
         }
@@ -233,6 +203,25 @@ namespace FoodManagement.Controllers
             };
 
             db.RecipeIngredients.Add(recipeIngredient);
+            await db.SaveChangesAsync();
+            return RedirectToAction("RecipeIngredients", new { id = recipeId });
+        }
+
+        [HttpPost, ActionName("RemoveIngredientFromRecipe")]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> RemoveIngredientFromRecipe(int recipeId, int ingredientId)
+        {
+            //check to see if this relationship already exists.  If not, we are done
+            RecipeIngredient link = (from ri in db.RecipeIngredients
+                              where ri.RecipeID == recipeId && ri.IngredientID == ingredientId
+                              select ri).FirstOrDefault();
+
+            if (link == null)
+            {
+                return RedirectToAction("RecipeIngredients", new { id = recipeId });
+            }
+
+            db.RecipeIngredients.Remove(link);
             await db.SaveChangesAsync();
             return RedirectToAction("RecipeIngredients", new { id = recipeId });
         }

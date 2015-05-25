@@ -10,44 +10,91 @@
 {
     <div class="form-horizontal">
         <h4>@Html.DisplayFor(model => model.CurrentRecipe.Name)</h4>
-        <h5>Unused Ingredients</h5>
-        @using (Html.BeginForm("RecipeIngredients", "Recipe", FormMethod.Get))
-        {
-            <p>
-                Name: @Html.TextBox("currentUnusedFilter", ViewBag.CurrentUnusedFilter as string)
-                <input type="submit" value="Search" />
-            </p>
-        }
-        <table class="table-condensed">
-            <tr>
-                <th>
-                    @Html.ActionLink("Name", "RecipeIngredients", new { unusedIngredientSort = ViewBag.UnusedNameSort, currentUnusedFilter = ViewBag.CurrentUnusedFilter })
-                </th>
-                <th>
-                    @Html.ActionLink("Type", "RecipeIngredients", new { unusedIngredientSort = ViewBag.UnusedTypeSort, currentUnusedFilter = ViewBag.CurrentUnusedFilter })
-                </th>
-            </tr>
-            
-            @foreach (var ingredients in Model.UnusedIngredients)
-            {
-                <tr>
-                    <td>
-                        @Html.DisplayFor(ingredient => ingredients.Name)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(ingredient => ingredients.IngredientType.Name)
-                    </td>
-                    <td>
-                        @{
-                            using (Html.BeginForm("AddIngredientToRecipe", "Recipe", new {recipeId = 1, ingredientId = ingredients.ID}))
-                            {
-                                @Html.AntiForgeryToken()
-                                <input type="submit" name="AddIngredient" value="Add Ingredient"/>
-                            }
-                        }
-                    </td>
-                </tr>
-            }
-        </table>
+
+        <div class="row">
+            <div class="col-xs-6">
+                <h5>Unused Ingredients</h5>
+                @using (Html.BeginForm("RecipeIngredients", "Recipe", FormMethod.Get))
+                {
+                    <p>
+                        Name: @Html.TextBox("currentUnusedFilter", ViewBag.CurrentUnusedFilter as string)
+                        <input type="submit" value="Search" />
+                    </p>
+                }
+
+                <table class="table-condensed">
+                    <tr>
+                        <th>
+                            @Html.ActionLink("Name", "RecipeIngredients", new { unusedIngredientSort = ViewBag.UnusedNameSort, currentUnusedFilter = ViewBag.CurrentUnusedFilter })
+                        </th>
+                        <th>
+                            @Html.ActionLink("Type", "RecipeIngredients", new { unusedIngredientSort = ViewBag.UnusedTypeSort, currentUnusedFilter = ViewBag.CurrentUnusedFilter })
+                        </th>
+                    </tr>
+                    @foreach (var ingredients in Model.UnusedIngredients)
+                    {
+                        <tr>
+                            <td>
+                                @Html.DisplayFor(ingredient => ingredients.Name)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(ingredient => ingredients.IngredientType.Name)
+                            </td>
+                            <td>
+                                @{
+                                    using (Html.BeginForm("AddIngredientToRecipe", "Recipe", new { recipeId = 1, ingredientId = ingredients.ID }))
+                                    {
+                                        @Html.AntiForgeryToken()
+                                        <input type="submit" name="AddIngredient" value="Add Ingredient" />
+                                    }
+                                }
+                            </td>
+                        </tr>
+                    }
+                </table>
+            </div>
+            <div class="col-xs-6">
+                <h5>Ingredients for Recipe</h5>
+                @using (Html.BeginForm("RecipeIngredients", "Recipe", FormMethod.Get))
+                {
+                    <p>
+                        Name: @Html.TextBox("currentIngredientsForRecipeFilter", ViewBag.CurrentUsedFilter as string)
+                        <input type="submit" value="Search" />
+                    </p>
+                }
+
+                <table class="table-condensed">
+                    <tr>
+                        <th>
+                            @Html.ActionLink("Name", "RecipeIngredients", new { ingredientsForRecipeSort = ViewBag.UsedNameSort, currentUnusedFilter = ViewBag.CurrentUsedFilter })
+                        </th>
+                        <th>
+                            @Html.ActionLink("Type", "RecipeIngredients", new { ingredientsForRecipeSort = ViewBag.UsedTypeSort, currentIngredientsForRecipeFilter = ViewBag.CurrentUsedFilter })
+                        </th>
+                    </tr>
+
+                    @foreach (var ingredients in Model.IngredientsForRecipe)
+                    {
+                        <tr>
+                            <td>
+                                @Html.DisplayFor(ingredient => ingredients.Name)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(ingredient => ingredients.IngredientType.Name)
+                            </td>
+                            <td>
+                                @{
+                                    using (Html.BeginForm("RemoveIngredientFromRecipe", "Recipe", new { recipeId = 1, ingredientId = ingredients.ID }))
+                                    {
+                                        @Html.AntiForgeryToken()
+                                        <input type="submit" name="RemoveIngredient" value="Remove Ingredient" />
+                                    }
+                                }
+                            </td>
+                        </tr>
+                    }
+                </table>
+            </div>
+        </div>
     </div>
 }

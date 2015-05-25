@@ -167,6 +167,7 @@
     <Compile Include="Controllers\RecipeController.cs" />
     <Compile Include="Controllers\StoreController.cs" />
     <Compile Include="DAL\FoodManagementContext.cs" />
+    <Compile Include="ExtensionMethods\IngredientExtensions.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
